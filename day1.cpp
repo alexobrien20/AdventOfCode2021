@@ -8,7 +8,7 @@ void part1(std::vector<int> numbers)
     int answer = 0;
     for(unsigned int i = 0; i < numbers.size() - 1; i++)
     {
-        answer += 1 ? numbers[i + 1] > numbers[i] : 0;
+        answer += numbers[i + 1] > numbers[i];
     }
     std::cout << "Part 1 Answer " << answer << "\n";
 }
@@ -18,7 +18,7 @@ void part2(std::vector<int> numbers)
     int answer = 0;
     for(unsigned int i = 0; i < numbers.size() - 3; i++)
     {
-        answer += 1 ? numbers[i + 3] > numbers[i] : 0;
+        answer += numbers[i + 3] > numbers[i];
     }
     std::cout << "Part 2 Answer " << answer << "\n";
 }
