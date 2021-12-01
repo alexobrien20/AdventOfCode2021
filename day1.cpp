@@ -16,7 +16,7 @@ void part1(std::vector<int> numbers)
 void part2(std::vector<int> numbers)
 {
     int answer = 0;
-    for(unsigned int i = 0; i < numbers.size() - 2; i++)
+    for(unsigned int i = 0; i < numbers.size() - 3; i++)
     {
         answer += 1 ? numbers[i + 3] > numbers[i] : 0;
     }
