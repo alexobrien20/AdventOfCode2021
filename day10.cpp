@@ -6,93 +6,76 @@
 #include <algorithm>
 
 
-void part1(std::vector<std::string> input)
+std::vector<int> part1(std::vector<std::string> input)
 {
-
-    // <([]){()}[{}])
-    // < = open
-    // ( = open
-    // [ = open
-    // ] = close? 
-
-    // e.g = [<([)]
-
-    std::vector<char> illegalChars;
+    int answer = 0;
     std::vector<char> opened;
-    std::vector<std::string> closed;
-    for(auto line : input)
+    std::vector<int> dropLines;
+    std::map<char, int> ans {{')', 3}, {']', 57}, {'}', 1197}, {'>', 25137}};
+    std::map<char, char> s{{']', '['}, {')','('}, {'}', '{'}, {'>', '<'}};
+    for(int i = 0; i < input.size(); i++)
     {
-        for(auto c : line)
+        for(auto c : input[i])
         {
-            // std::cout << "c " << c << "\n";
             if(c == '[' || c == '{' || c == '<' || c == '(')
             {
                 opened.push_back(c);
             }
-            else if (c == ']')
+            else
             {
-                if(opened.back() != '[')
+                if(opened.back() != s[c])
                 {
-                    std::cout << "Corrupted" << "\n";
-                    illegalChars.push_back(c);
+                    dropLines.push_back(i);
+                    answer += ans[c];
                     break;
                 }
                 else
                 {
                     opened.erase(opened.end() - 1);
                 }
-            }
-            else if (c == ')')
-            {
-                if(opened.back() != '(')
-                {
-                    std::cout << "Corrupted" << "\n";
-                    illegalChars.push_back(c);
-                    break;
-                }
-                else
-                {
-                    opened.erase(opened.end() - 1);
-                }
-            }
-           else if (c == '}')
-            {
-                if(opened.back() != '{')
-                {
-                    std::cout << "Corrupted" << "\n";
-                    illegalChars.push_back(c);
-                    break;
-                }
-                else
-                {
-                    opened.erase(opened.end() - 1);
-                }
-            }
-            else if (c == '>')
-            {
-                if(opened.back() != '<')
-                {
-                    std::cout << "Corrupted" <<"\n";
-                    illegalChars.push_back(c);
-                    break;
-                }
-                else
-                {
-                    opened.erase(opened.end() - 1);
-                }
-            } 
-            
+            }   
         }
     }
-    std::map<char, int> ans {{')', 3}, {']', 57}, {'}', 1197}, {'>', 25137}};
-    int answer = 0;
-    for(auto c : illegalChars)
-    {
-        answer += ans[c];
-    }
-    std::cout << answer << "\n";
+    std::cout << "Part 1 Answer : " << answer << "\n";
+    return dropLines;
 }
 
+void part2(std::vector<int> dropLines, std::vector<std::string> input)
+{
+    std::sort(dropLines.begin(), dropLines.end(), std::greater<>());
+    for(auto drop : dropLines)
+    {
+        auto it = input.begin() + drop;
+        input.erase(input.begin() + drop);
+    }
+    std::vector<long> answers;
+    std::map<char, char> s{{'[', ']'}, {'(',')'}, {'{', '}'}, {'<', '>'}};
+    std::map<char, int> score{{'}', 3}, {'>', 4}, {']', 2}, {')', 1}};
+    for(auto line : input)
+    {
+        std::vector<char> opened;
+        for(auto c : line)
+        {
+            if(c == '[' || c == '{' || c == '<' || c == '(')
+            {
+                opened.push_back(c);
+            }
+            else
+            {
+                opened.erase(opened.end() - 1);
+            }
+        }
+        long answer2 = 0;
+        for(int i = opened.size() - 1; i >= 0; i--)
+        {
+            answer2 *= 5;
+            answer2 += score[s[opened[i]]];
+        } 
+        answers.push_back(answer2);
+    }
+    std::sort(answers.begin(), answers.end());
+    std::cout << "Part 2 Answer : " << answers[(answers.size() / 2)] << "\n";
+}
 
 int main()
 {
@@ -104,6 +87,6 @@ int main()
     {
         input.push_back(line);
     }
-    part1(input);
-    return 0;
+    std::vector<int> dropLines = part1(input);
+    part2(dropLines, input);
 }
