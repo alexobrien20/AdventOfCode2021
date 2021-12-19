@@ -75,13 +75,39 @@ int main()
         }
         input.push_back(temp);
     }
-    // std::vector<std::vector<int>> input2;
-    // for(int row = 0; row < input.size(); row++)
-    // {
-    //     for(int i = 0; i < 4; i++)
-    //     {
-    //         std::vector<int>temp = std::for_each(input[row].begin(), input[row].end(), [](int n){return (n == 9) ? 1 : n++;});
-    //     }
-    // }
+    std::cout << "Part 1 Answer ";
     solve(input);
+
+    std::vector<std::vector<int>> temp = input;  
+    std::vector<std::vector<int>> input2;  
+    for(int i = 0; i < input.size(); i++)
+    {
+        std::vector<int> temp = input[i];
+        std::vector<int> temp2;
+        for(int j = 0; j < temp.size(); j++)
+        {
+            temp2.push_back(temp[j]);
+        }
+        for(int j = 0; j < 4; j++)
+        {
+            std::for_each(temp.begin(), temp.end(), [](int &n){if(n == 9){ n = 1;} else {n++;}});
+            for(int x = 0; x < temp.size(); x++)
+            {
+                temp2.push_back(temp[x]);
+            }
+        }
+        input2.push_back(temp2);
+    }
+    std::vector<std::vector<int>> temp2 = input2; 
+    for(int i = 0; i < 4; i++)
+    {
+        for(int row = 0; row < temp2.size(); row++)
+        {
+            std::for_each(temp2[row].begin(), temp2[row].end(), [](int &n){if(n == 9){ n = 1;} else {n++;}});
+        }
+        input2.insert(input2.end(), temp2.begin(), temp2.end());
+    }
+  
+    std::cout << "Part 2 Answer ";
+    solve(input2);
 }
