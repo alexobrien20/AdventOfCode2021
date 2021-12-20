@@ -1,56 +1,62 @@
 #include <iostream>
-#include <sstream>
 #include <fstream>
-#include <vector>
 #include <map>
-#include <tuple>
 #include <algorithm>
 
-std::string step(std::vector<std::tuple<std::string, std::string>> input, std::string start)
+void checkOrInsert(std::map<std::string, long long> &pairCounts, std::string newPair, long long val = 1)
 {
-    std::string last;
-    std::string answer;
-    for(int i = 0; i < start.size() - 1; i++)
+    auto lb = pairCounts.lower_bound(newPair);
+    if(lb != pairCounts.end() && !(pairCounts.key_comp()(newPair, lb->first)))
     {
-        std::string pair = start.substr(i, 2);
-        for(auto rule : input)
-        {
-            std::string p = std::get<0>(rule);
-            if(pair == p)
-            {
-                std::string a = std::get<1>(rule);
-                // std::cout << "Pair " << pair << "\n";
-                // std::cout << "With " << p << " Insert " << a << "\n";
-                answer+= pair[0] + a;
-                last = pair[1];
-            }
-        }
+        pairCounts[newPair] += val;
     }
-    answer += last;
-    return answer;
+    else
+    {
+        pairCounts.insert({newPair, val});
+    }    
 }
 
-void part1(std::vector<std::tuple<std::string, std::string>> input, std::string start, int steps)
+std::map<std::string, long long> step(std::map<std::string, std::string> rules, std::map<std::string, long long> pairCounts, std::map<std::string, long long> &runningCounts)
 {
-    for(int i = 0; i < steps; i++)
+    std::map<std::string, long long> newCounts = pairCounts;
+    for(auto pairCount : pairCounts)
     {
-        start = step(input, start);
+        long long val = std::get<1>(pairCount);
+        if(val == 0){continue;}
+        std::string pair = std::get<0>(pairCount);
+        std::string a = rules[pair], newPair1 = pair[0] + a, newPair2 = a + pair[1];
+        newCounts[pair] -= val;
+        checkOrInsert(newCounts, newPair1, val);
+        checkOrInsert(newCounts, newPair2, val);
+        checkOrInsert(runningCounts, a, val);
     }
-    std::map<char, int> counts;
+    return newCounts;
+}
+
+void solve(std::map<std::string, std::string> rules, std::string start, int steps)
+{
+    std::map<std::string, long long> runningCounts; 
+    std::map<std::string, long long> pairCounts;
     for(int i = 0; i < start.size(); i++)
     {
-        counts[start[i]]++;
+        std::string pair = start.substr(i, 2);
+        checkOrInsert(pairCounts, pair);
+        checkOrInsert(runningCounts, std::string(1, start[i]));
     }
-    auto x = std::max_element(counts.begin(), counts.end(), [](const std::pair<char, int>&p1, const std::pair<char, int> &p2){return p1.second < p2.second;});
-    auto y = std::min_element(counts.begin(), counts.end(), [](const std::pair<char, int>&p1, const std::pair<char, int> &p2){return p1.second < p2.second;});
-    std::cout << (*x).second - (*y).second << "\n";
+    for(int i = 0; i < steps; i++)
+    {
+        pairCounts = step(rules, pairCounts, runningCounts);
+    }
+    auto x = std::max_element(runningCounts.begin(), runningCounts.end(), [](const std::pair<std::string, long long>&p1, const std::pair<std::string, long long> &p2){return p1.second < p2.second;});
+    auto y = std::min_element(runningCounts.begin(), runningCounts.end(), [](const std::pair<std::string, long long>&p1, const std::pair<std::string, long long> &p2){return p1.second < p2.second;});
+    std::cout << (*x).second - (*y).second;
 }
 
 int main()
 {
     std::ifstream file("day14.txt");
     if(!file){ std::cout << "Error openning file!"; return 0;}
-    std::vector<std::tuple<std::string, std::string>> input;
+    std::map<std::string, std::string> input;
     std::string line;
     std::string start;
     while(std::getline(file, line))
@@ -59,13 +65,16 @@ int main()
         {
             std::string pair = line.substr(0, line.find(" -> "));
             std::string insert = line.substr(line.find(" -> ") + 4, std::string::npos);
-            input.push_back(std::make_tuple(pair, insert));
+            input.insert({{pair, insert}});
         }
         else if(!line.empty())
         {
             start = line;
         }
     }
-    part1(input, start, 40);
-    return 0;
+    std::cout << "Part 1 Answer ";
+    solve(input, start, 10);
+    std::cout << "\nPart 2 Answer ";
+    solve(input, start, 40);
+    std::cout << "\n";
 }
